@@ -100,9 +100,6 @@
 
   
 
-(define (filter-frm frm mb-lst)
-  (filter (lambda (e) (equal? frm (list-ref e 1))) mb-lst))
-
   
 ;; FB4
 (define (sort-by-to mb-lst) ; sort by recipient in decending order
