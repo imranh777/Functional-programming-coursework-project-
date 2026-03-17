@@ -1,0 +1,177 @@
+ (let* (
+         ;; total emails
+         (p (total (length-body mb-lst))
+
+         ;; number of flagged emails
+         (s (flags (apply + (map (lambda (e) (list-ref e 7)) mb-lst)))
+
+         ;; number of read emails
+         (reads (length (filter (lambda (e) (list-ref e 8)) mb-lst)))
+        )
+    (append body (list 'Mailbox-stats: (list total flags reads))))                   ;appends new body with the stats inserted
+
+
+;; FA5
+(define (encrypt body)
+  (let* (
+         ;; Count number of paragraphs
+         (p (length body))
+         ;; Count total number of sentences
+         (s (apply + (map length body)))
+         ;; Count sentences in first paragraph, if exists
+         (e (if (null? body)
+                'SCRT
+                (length (car body)))))
+    ;; Append the secret code to the end of the body
+    (append body (list (list 'Secret-code: (list (* p s) (if (eq? e 'SCRT) 'SCRT (* e 100))))))))  
+
+
+  
+FRB.5
+(define (add-stats mb-lst)
+  (let* (
+         ;; total emails
+         (total (length mb-lst))
+
+         ;; number of flagged emails
+         (flags (apply + (map (lambda (e) (list-ref e 7)) mb-lst)))
+
+         ;; number of read emails
+         (reads (length (filter (lambda (e) (list-ref e 8)) mb-lst)))
+        )
+    (list 'Mailbox-stats: (list total flags reads))))
+
+
+
+
+  (let* (
+         ;; total emails
+         (p (total (length-body mb-lst))
+
+         ;; number of flagged emails
+         (s (flags (apply + (map (lambda (e) (list-ref e 7)) mb-lst)))
+
+         ;; number of read emails
+         (reads (length (filter (lambda (e) (list-ref e 8)) mb-lst)))
+        )
+    (append body (list 'Mailbox-stats: (list total flags reads))))                   ;appends new body with the stats inserted
+
+
+;; FA5
+(define (encrypt body)
+  (let* (
+         ;; Count number of paragraphs
+         (p (length body))
+         ;; Count total number of sentences
+         (s (apply + (map length body)))
+         ;; Count sentences in first paragraph, if exists
+         (e (if (null? body)
+                'SCRT
+                (length (car body)))))
+    ;; Append the secret code to the end of the body
+    (append body (list (list 'Secret-code: (list (* p s) (if (eq? e 'SCRT) 'SCRT (* e 100))))))))  
+
+
+  
+FRB.5
+(define (add-stats mb-lst)
+  (let* (
+         ;; Count number of paragraphs
+         (p (length body))
+
+         ;; Count total number of sentences
+         (s (apply + (map length body)))
+
+         ;; Create statistics list
+         (stats (list 'Stats:
+                      (list "P count:" p)
+                      (list "S count:" s)))
+        )
+    ;; Insert the statistics at the beginning of the body
+    (append (list stats) body)))
+        )
+
+    ;; Insert stats at the beginning of the body
+    (cons stats body)))
+
+  (let* (
+         ;; total emails
+         (total (length mb-lst))
+
+         ;; number of flagged emails
+         (flags (apply + (map (lambda (e) (list-ref e 7)) mb-lst)))
+
+         ;; number of read emails
+         (reads (length (filter (lambda (e) (list-ref e 8)) mb-lst)))
+        )
+    (list 'Mailbox-stats: (list total flags reads))))
+
+
+(define (encrypt body)
+  (let* (
+         ;; Count number of paragraphs
+         (p (length body))
+         ;; Count total number of sentences
+         (s (apply + (map length body)))
+         ;; Count sentences in first paragraph, if exists
+         (e (if (null? body)
+                'SCRT
+                (length (car body)))))
+    ;; Append the secret code to the end of the body
+    (append body (list (list 'Secret-code: (list (* p s) (if (eq? e 'SCRT) 'SCRT (* e 100))))))))  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+          
+
