@@ -108,42 +108,33 @@
 (define (mark id type mb-lst)
   (cond
     [(null? mb-lst) '()]
-
     [(= id (car (car mb-lst)))
      (cons
-      (cond
-        [(eq? type 'read)
-         (replace-value 8 #t (car mb-lst))]
-        [(eq? type 'flag)
-         (replace-value 7 #t (car mb-lst))]
-        [else (car mb-lst)])
+      (let ((email (car mb-lst)))
+        (cond
+          [(eq? type 'read) (replace-value 8 #t email)]
+          [(eq? type 'flag) (replace-value 7 #t email)]
+          [else email]))
       (cdr mb-lst))]
-
     [else
-     (cons (car mb-lst)
-           (mark id type (cdr mb-lst)))]))
+     (cons (car mb-lst) (mark id type (cdr mb-lst)))]))
   
 ;; FB2
 (define (mv-email id tag mb-lst)
   (cond
     [(null? mb-lst) '()]
-
     [(= id (car (car mb-lst)))
      (cons
-      (replace-value 6
-        (cond
-          [(eq? tag 'conf)
-           (encrypt (list-ref (car mb-lst) 6))]
-          [(eq? tag 'prsnl)
-           (add-stats (list-ref (car mb-lst) 6))]
-          [else
-           (list-ref (car mb-lst) 6)])
-        (replace-value 5 tag (car mb-lst)))
+      (let ((email (car mb-lst)))
+        (replace-value 6
+          (cond
+            [(eq? tag 'conf) (encrypt (caddr (cddddr email)))] ; body
+            [(eq? tag 'prsnl) (add-stats (caddr (cddddr email)))]
+            [else (caddr (cddddr email))])
+          (replace-value 5 tag email)))
       (cdr mb-lst))]
-
     [else
-     (cons (car mb-lst)
-           (mv-email id tag (cdr mb-lst)))]))
+     (cons (car mb-lst) (mv-email id tag (cdr mb-lst)))]))
   
 ;; FB3
 (define (find-by-date date mb-lst)
@@ -157,35 +148,26 @@
 (define (insert-email-to email sorted-mb)
   (cond
     [(null? sorted-mb) (list email)]
-
-    [(string>?
-      (symbol->string (list-ref email 2))
-      (symbol->string (list-ref (car sorted-mb) 2)))
+    [(string>? (symbol->string (caddr email))
+               (symbol->string (caddr (car sorted-mb))))
      (cons email sorted-mb)]
-
     [else
      (cons (car sorted-mb)
            (insert-email-to email (cdr sorted-mb)))]))
 
 (define (sort-by-to mb-lst)
-  (cond
-    [(null? mb-lst) '()]
-
-    [else
-     (insert-email-to (car mb-lst)
-                      (sort-by-to (cdr mb-lst)))]))
+  (if (null? mb-lst)
+      '()
+      (insert-email-to (car mb-lst)
+                       (sort-by-to (cdr mb-lst)))))
   
 ;; FB5
 (define (add-stats bdy)
   (cons
    (list 'Stats:
          (list "P count:" (length bdy))
-         (list "S count:"
-               (if (null? bdy)
-                   0
-                   (apply + (map length bdy)))))
+         (list "S count:" (if (null? bdy) 0 (apply + (map length bdy)))))
    bdy))
-
 
 ;; Partners A&B
 ;; FA&FB6 
@@ -208,21 +190,21 @@
 
 ;FB.6
 (define (add-email frm to date subject tag body mb-lst)
-  (let* (
-         ;; Generate new ID
-         (new-id (if (null? mb-lst)
-                  0
-                  (+ 1 (apply max (map car mb-lst)))))
-        ;; Encrypt body if the email is confidential ('conf)
-         (new-body (cond
-                     [(eq? tag 'conf) (encrypt body)]
-                     [(eq? tag 'prsnl) (add-stats body)]
-                     [else body]))
-
-         ;; Create new email entry
-         (new-email (list new-id frm to date subject tag new-body 0 #f)))
-    ;; Add new email to end of mailbox
-    (append mb-lst (list new-email))))
+  (append mb-lst
+          (list
+           (list
+            (if (null? mb-lst) 0 (+ 1 (apply max (map car mb-lst))))
+            frm
+            to
+            date
+            subject
+            tag
+            (cond
+              [(eq? tag 'conf) (encrypt body)]
+              [(eq? tag 'prsnl) (add-stats body)]
+              [else body])
+            #f
+            #f))))
 
 
 
