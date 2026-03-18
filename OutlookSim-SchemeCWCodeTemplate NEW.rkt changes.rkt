@@ -156,24 +156,22 @@
     ;; Add new email to end of mailbox
     (append mb-lst (list new-email))))
 
-
+;FB.6
 (define (add-email frm to date subject tag body mb-lst)
   (let* (
          ;; Generate new ID
          (new-id (if (null? mb-lst)
-                     0
-                     (+ 1 (apply max (map car mb-lst)))))
-
-         ;; Process body
+                  0
+                  (+ 1 (apply max (map car mb-lst)))))
+        ;; Encrypt body if the email is confidential ('conf)
          (new-body (cond
                      [(eq? tag 'conf) (encrypt body)]
                      [(eq? tag 'prsnl) (add-stats body)]
                      [else body]))
 
-         ;; Create new email
-         (new-email (list new-id frm to date subject tag new-body 0 #f))
-        )
-    ;; Body of let* (THIS was missing before)
+         ;; Create new email entry
+         (new-email (list new-id frm to date subject tag new-body 0 #f)))
+    ;; Add new email to end of mailbox
     (append mb-lst (list new-email))))
 
 
