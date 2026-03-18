@@ -96,7 +96,7 @@
 
 ;; FB3
 (define (find-by-date date mb-lst)
-   (filter (lambda (e) (equal? date (list-ref e 3))) mb-lst))
+  (filter (lambda (e) (equal? date (list-ref e 3))) mb-lst))
   
 
   
