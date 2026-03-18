@@ -46,179 +46,182 @@
 ;; FA1
 (define (get-email id mb-lst)
   (cond
-    [(null? mb-lst) '()]  
+    [(null? mb-lst) '()]
     [(= id (car (car mb-lst))) (car mb-lst)]
     [else (get-email id (cdr mb-lst))]))
-  
+
 ;; FA2
 (define (del-email id mb-lst)
   (cond
-    [(null? mb-lst) '()]   ; base case
-
-    [(= id (car (car mb-lst)))   
-     (cons
-      (append (take (car mb-lst) 5) (list 'bin) (drop (car mb-lst) 6))
-      (cdr mb-lst))]
-
+    [(null? mb-lst) '()]
+    [(= id (car (car mb-lst)))
+     (cons (replace-value 5 'bin (car mb-lst))
+           (cdr mb-lst))]
     [else
      (cons (car mb-lst)
            (del-email id (cdr mb-lst)))]))
-  
-;; FA3
+
+;; FA3 
 (define (filter-frm frm mb-lst)
-  (filter (lambda (e) (equal? frm (list-ref e 1))) mb-lst))
-  
+  (cond
+    [(null? mb-lst) '()]
+    [(equal? frm (list-ref (car mb-lst) 1))
+     (cons (car mb-lst)
+           (filter-frm frm (cdr mb-lst)))]
+    [else
+     (filter-frm frm (cdr mb-lst))]))
+
 ;; FA4
-;; Insert a single email into a sorted mailbox by sender
 (define (insert-email email sorted-mb)
   (cond
-    [(null? sorted-mb) (list email)] ; base: empty sorted list
-    [(string<? (symbol->string (list-ref email 1))
-               (symbol->string (list-ref (car sorted-mb) 1)))
-     (cons email sorted-mb)] 
+    [(null? sorted-mb) (list email)]
+    [(string<?
+      (symbol->string (list-ref email 1))
+      (symbol->string (list-ref (car sorted-mb) 1)))
+     (cons email sorted-mb)]
     [else
-     (cons (car sorted-mb) (insert-email email (cdr sorted-mb)))]))
+     (cons (car sorted-mb)
+           (insert-email email (cdr sorted-mb)))]))
 
-;; Sort the mailbox recursively by sender (From field)
 (define (sort-by-frm mb-lst)
   (if (null? mb-lst)
       '()
-      (insert-email (car mb-lst) (sort-by-frm (cdr mb-lst)))))
+      (insert-email (car mb-lst)
+                    (sort-by-frm (cdr mb-lst)))))
 
 ;; FA5
 (define (encrypt body)
   (let* (
          (p (length body))
-         (s (apply + (map length body)))
-         (e (if (null? body)
-                'SCRT
-                (length (car body)))))
-    (append body (list (list 'Secret-code: (list (* p s) (if (eq? e 'SCRT) 'SCRT (* e 100))))))))  
+         (s (if (null? body) 0 (apply + (map length body))))
+         (e (if (null? body) 'SCRT (length (car body))))
+        )
+    (append body
+            (list
+             (list 'Secret-code:
+                   (list (* p s)
+                         (if (eq? e 'SCRT) 'SCRT (* e 100))))))))
+
 
 ;; PARTNER B
 ;; FB1
 (define (mark id type mb-lst)
   (cond
-     [(null? mb-lst) '()]
-    (= id (car (car mb-lst))) (car mb-lst)
-     (else
-      (cons
-       (car mb-lst)
-       (mark id (cdr mb-lst))))))
-      
+    [(null? mb-lst) '()]
+
+    [(= id (car (car mb-lst)))
+     (cons
+      (cond
+        [(eq? type 'read)
+         (replace-value 8 #t (car mb-lst))]
+        [(eq? type 'flag)
+         (replace-value 7 #t (car mb-lst))]
+        [else (car mb-lst)])
+      (cdr mb-lst))]
+
+    [else
+     (cons (car mb-lst)
+           (mark id type (cdr mb-lst)))]))
   
 ;; FB2
 (define (mv-email id tag mb-lst)
   (cond
     [(null? mb-lst) '()]
-    
-    (= id (car (car mb-lst)))
+
+    [(= id (car (car mb-lst)))
      (cons
-      (append 5 tag (car mb-lst))
+      (replace-value 6
+        (cond
+          [(eq? tag 'conf)
+           (encrypt (list-ref (car mb-lst) 6))]
+          [(eq? tag 'prsnl)
+           (add-stats (list-ref (car mb-lst) 6))]
+          [else
+           (list-ref (car mb-lst) 6)])
+        (replace-value 5 tag (car mb-lst)))
       (cdr mb-lst))]
-    
-    (else
-     (cons
-      (car mb-lst)
-      (mv-email id tag (cdr mb-lst)))]))
 
-
-
-
+    [else
+     (cons (car mb-lst)
+           (mv-email id tag (cdr mb-lst)))]))
+  
 ;; FB3
 (define (find-by-date date mb-lst)
-   (filter (lambda (e) (equal? date (list-ref e 3))) mb-lst))
-  
+  (cond
+    [(null? mb-lst) '()]
 
+    [(equal? date (list-ref (car mb-lst) 3))
+     (cons (car mb-lst)
+           (find-by-date date (cdr mb-lst)))]
+
+    [else
+     (find-by-date date (cdr mb-lst))]))
   
 ;; FB4
-(define (sort-by-to mb-lst) ; sort by recipient in decending order
+(define (insert-email-to email sorted-mb)
   (cond
-    [(null? sorted-mb) (list email)] ; base: empty sorted list
-    [(string>? (symbol->string (list-ref email 2))
-               (symbol->string (list-ref (car sorted-mb) 2)))
-     (cons email sorted-mb)] 
+    [(null? sorted-mb) (list email)]
+
+    [(string>?
+      (symbol->string (list-ref email 2))
+      (symbol->string (list-ref (car sorted-mb) 2)))
+     (cons email sorted-mb)]
+
     [else
-     (cons (car sorted-mb) (insert-email email (cdr sorted-mb)))]))
+     (cons (car sorted-mb)
+           (insert-email-to email (cdr sorted-mb)))]))
 
-;; Sort the mailbox recursively by sender (From field)
-(define (sort-by-frm mb-lst)
-  (if (null? mb-lst)
-      '()
-      (insert-email (car mb-lst) (sort-by-frm (cdr mb-lst)))))
+(define (sort-by-to mb-lst)
+  (cond
+    [(null? mb-lst) '()]
 
-
+    [else
+     (insert-email-to (car mb-lst)
+                      (sort-by-to (cdr mb-lst)))]))
   
 ;; FB5
-(define (add-stats bdy) ; MODIFIED - now only takes an email body message 
-    (let* (
-         ;; Count number of paragraphs
-         (p (length bdy))
-
-         ;; Count total number of sentences
-         (s (apply + (map length bdy)))
-
-         ;; Create statistics list
-         (stats (list 'Stats:
-                      (list "P count:" p)
-                      (list "S count:" s)))
-        )
-    ;; Insert the statistics at the beginning of the body
-    (cons stats bdy)))
-                   ;            and returns a new body with the stats inserted
+(define (add-stats bdy)
+  (cons
+   (list 'Stats:
+         (list "P count:" (length bdy))
+         (list "S count:"
+               (if (null? bdy)
+                   0
+                   (apply + (map length bdy)))))
+   bdy))
 
 
 ;; Partners A&B
 ;; FA&FB6 
 (define (add-email frm to date subject tag body mb-lst)
-  (let* (
-         ;; Generate new ID: use length of mailbox
-         (new-id (length mb-lst))
-
-         ;; Process body based on tag
-         (new-body (cond
-                     [(eq? tag 'conf) (encrypt body)]
-                     [(eq? tag 'prsnl) (add-stats body)]
-                     [else body]))
-
-         ;; Create new email entry
-         (new-email (list new-id frm to date subject tag new-body 0 #f))
-        )
-    ;; Add new email to end of mailbox
-    (append mb-lst (list new-email))))
-
-
-(define (add-email frm to date subject tag body mb-lst)
-  (let* (
-         ;; Generate new ID
-         (new-id (if (null? mb-lst)
-                     0
-                     (+ 1 (apply max (map car mb-lst)))))
-
-         ;; Process body
-         (new-body (cond
-                     [(eq? tag 'conf) (encrypt body)]
-                     [(eq? tag 'prsnl) (add-stats body)]
-                     [else body]))
-
-         ;; Create new email
-         (new-email (list new-id frm to date subject tag new-body 0 #f))
-        )
-    ;; Body of let* (THIS was missing before)
-    (append mb-lst (list new-email))))
-
-
+  (append mb-lst
+          (list
+           (list
+            (if (null? mb-lst)
+                0
+                (+ 1 (apply max (map car mb-lst))))
+            frm
+            to
+            date
+            subject
+            tag
+            (cond
+              [(eq? tag 'conf) (encrypt body)]
+              [(eq? tag 'prsnl) (add-stats body)]
+              [else body])
+            #f
+            #f))))
 
 
 ;;
 ;;You should include code to execute each of your functions below.
 ;; Examples (test your code thoroughly using different arguments):
 'A1
-(get-email 1 mb)
+(get-email 5 mb)
 'A2
 (del-email 1 mb)
 'A3
-(filter-frm 'Ehsan2@gre.ac.uk mb)
+(filter-frm 'Mobolaji5@gre.ac.uk mb)
 'A4
 (sort-by-frm mb)
 'A5
@@ -226,17 +229,15 @@
 'B1
 (mark 1 'flag mb)
 'B2
-(mv-email 1 'inbox mb)
+(mv-email 1 'bin mb)
 'B3
 (find-by-date '(3 3 2025) mb)
 'B4
 (sort-by-to mb)
 'B5
-(add-stats '(("Body 6")("Sany Ehsan2.")))
+(add-stats '(("Margarita Rafael6." "Please check email 33+234." "Deadline 10/4/2025." "sdfsdf" "sadfsdf")))
 
 'A&B6
-(add-email 'Kim9@gre.ac.uk 'Zia10@gre.ac.uk '(10 2 2026) "Reminder 1!" 'inbox '(("Body msg new.")("Sam." "Zia." "Confirmed meeting")("Teams link to follow")) mb)
-
-
-
-
+;(add-email 'Kim9@gre.ac.uk 'Zia10@gre.ac.uk '(10 2 2026) "Reminder 1!" 'inbox '(("Body msg new.")("Sam." "Zia." "Confirmed meeting")("Teams link to follow")) mb)
+(add-email 'Nora11@gre.ac.uk 'Omar12@gre.ac.uk '(12 2 2026) "Confidential update" 'conf '(("Please review the attached draft.") ("Do not share externally.")) mb)
+(add-email 'Lina13@gre.ac.uk 'Rafi14@gre.ac.uk '(14 2 2026) "Personal note" 'prsnl '(("Hi Rafi, this is a personal follow-up.") ("Let's catch up tomorrow.")) mb)
