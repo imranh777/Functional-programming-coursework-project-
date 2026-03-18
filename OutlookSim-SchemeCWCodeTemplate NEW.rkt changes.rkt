@@ -147,12 +147,8 @@
   
 ;; FB3
 (define (find-by-date date mb-lst)
-  (cond
-    [(null? mb-lst) '()]
-
-    [(equal? date (list-ref (car mb-lst) 3))
-     (cons (car mb-lst)
-           (find-by-date date (cdr mb-lst)))]
+  (filter (lambda (e) (equal? date (list-ref e 3))) mb-lst))
+  
 
     [else
      (find-by-date date (cdr mb-lst))]))
@@ -194,23 +190,41 @@
 ;; Partners A&B
 ;; FA&FB6 
 (define (add-email frm to date subject tag body mb-lst)
-  (append mb-lst
-          (list
-           (list
-            (if (null? mb-lst)
-                0
-                (+ 1 (apply max (map car mb-lst))))
-            frm
-            to
-            date
-            subject
-            tag
-            (cond
-              [(eq? tag 'conf) (encrypt body)]
-              [(eq? tag 'prsnl) (add-stats body)]
-              [else body])
-            #f
-            #f))))
+  (let* (
+         ;; Generate new ID: use length of mailbox
+         (new-id (length mb-lst))
+
+         ;; Process body based on tag
+         (new-body (cond
+                     [(eq? tag 'conf) (encrypt body)]
+                     [(eq? tag 'prsnl) (add-stats body)]
+                     [else body]))
+
+         ;; Create new email entry
+         (new-email (list new-id frm to date subject tag new-body 0 #f))
+        )
+    ;; Add new email to end of mailbox
+    (append mb-lst (list new-email))))
+
+;FB.6
+(define (add-email frm to date subject tag body mb-lst)
+  (let* (
+         ;; Generate new ID
+         (new-id (if (null? mb-lst)
+                  0
+                  (+ 1 (apply max (map car mb-lst)))))
+        ;; Encrypt body if the email is confidential ('conf)
+         (new-body (cond
+                     [(eq? tag 'conf) (encrypt body)]
+                     [(eq? tag 'prsnl) (add-stats body)]
+                     [else body]))
+
+         ;; Create new email entry
+         (new-email (list new-id frm to date subject tag new-body 0 #f)))
+    ;; Add new email to end of mailbox
+    (append mb-lst (list new-email))))
+
+
 
 
 ;;
