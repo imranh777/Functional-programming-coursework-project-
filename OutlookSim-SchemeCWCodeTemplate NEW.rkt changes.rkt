@@ -157,6 +157,28 @@
     (append mb-lst (list new-email))))
 
 
+(define (add-email frm to date subject tag body mb-lst)
+  (let* (
+         ;; Generate new ID
+         (new-id (if (null? mb-lst)
+                     0
+                     (+ 1 (apply max (map car mb-lst)))))
+
+         ;; Process body
+         (new-body (cond
+                     [(eq? tag 'conf) (encrypt body)]
+                     [(eq? tag 'prsnl) (add-stats body)]
+                     [else body]))
+
+         ;; Create new email
+         (new-email (list new-id frm to date subject tag new-body 0 #f))
+        )
+    ;; Body of let* (THIS was missing before)
+    (append mb-lst (list new-email))))
+
+
+
+
 ;;
 ;;You should include code to execute each of your functions below.
 ;; Examples (test your code thoroughly using different arguments):
