@@ -96,8 +96,7 @@
 
 ;; FB3
 (define (find-by-date date mb-lst)
-  (map (lambda (e) (if (= id (list-ref e 0)) (replace-value 5 tag e) e)) mb-lst))
-
+   (filter (lambda (e) (equal? date (list-ref e 3))) mb-lst))
   
 
   
@@ -121,13 +120,41 @@
   
 ;; FB5
 (define (add-stats bdy) ; MODIFIED - now only takes an email body message 
-  ())                   ;            and returns a new body with the stats inserted
+    (let* (
+         ;; Count number of paragraphs
+         (p (length bdy))
+
+         ;; Count total number of sentences
+         (s (apply + (map length bdy)))
+
+         ;; Create statistics list
+         (stats (list 'Stats:
+                      (list "P count:" p)
+                      (list "S count:" s)))
+        )
+    ;; Insert the statistics at the beginning of the body
+    (cons stats bdy)))
+                   ;            and returns a new body with the stats inserted
 
 
 ;; Partners A&B
 ;; FA&FB6 
 (define (add-email frm to date subject tag body mb-lst)
-  ())
+  (let* (
+         ;; Generate new ID: use length of mailbox
+         (new-id (length mb-lst))
+
+         ;; Process body based on tag
+         (new-body (cond
+                     [(eq? tag 'conf) (encrypt body)]
+                     [(eq? tag 'prsnl) (add-stats body)]
+                     [else body]))
+
+         ;; Create new email entry
+         (new-email (list new-id frm to date subject tag new-body 0 #f))
+        )
+    ;; Add new email to end of mailbox
+    (append mb-lst (list new-email))))
 
 
 ;;
